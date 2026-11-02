@@ -5,7 +5,7 @@
 import { launch, Page, sleep } from './cdp.mjs';
 import { rm } from 'node:fs/promises';
 
-const BASE = process.env.BASE_URL || new URL('../思维导图.html', import.meta.url).href;
+const BASE = process.env.BASE_URL || (await import('./fixture.mjs')).fixtureUrl;
 const PASSWORD = 'Test-1234';
 const READY =
   "(function(){const l=document.querySelector('#lockScreen'),s=document.querySelector('#shell');return !!window.__yinian && ((l&&!l.hidden)||(s&&!s.hidden));})()";

@@ -313,6 +313,8 @@ def main() -> int:
             print("构建失败：--out 需要文件路径", file=sys.stderr)
             return 1
         out_path = Path(target).expanduser().resolve()
+    # --no-auth：忽略 src/auth.json，构建「访客自设密码」版本（测试夹具用）
+    no_auth = "--no-auth" in args
 
     try:
         modules = resolve_order(ENTRY)
@@ -324,7 +326,7 @@ def main() -> int:
 
     css = (SRC / "app.css").read_text(encoding="utf-8")
     shell = (SRC / "shell.html").read_text(encoding="utf-8")
-    profile = resolve_auth_profile()
+    profile = None if no_auth else resolve_auth_profile()
 
     stamp = datetime.now().strftime("%Y-%m-%d %H:%M")
     auth_note = (

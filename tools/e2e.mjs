@@ -6,7 +6,7 @@ import { launch, Page, sleep } from './cdp.mjs';
 import { readdir, readFile, rm, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 
-const BASE = process.env.BASE_URL || new URL('../思维导图.html', import.meta.url).href;
+const BASE = process.env.BASE_URL || (await import('./fixture.mjs')).fixtureUrl;
 const DOWNLOAD_DIR = '/tmp/yinian-downloads';
 const PASSWORD = 'Test-1234';
 // 应用就绪：内部钩子可用，且锁屏或工作区已经显示
