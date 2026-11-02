@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>一念 · 本地思维导图</title>
+    <meta name="description" content="离线优先的个人思维导图与知识组织应用：节点、媒体、参考资料、JSON 导入导出，数据加密保存在本机。" />
+    <meta name="color-scheme" content="light dark" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232E5AAC'/%3E%3Ccircle cx='22' cy='32' r='6' fill='%23fff'/%3E%3Ccircle cx='43' cy='19' r='4.5' fill='%23fff' opacity='.9'/%3E%3Ccircle cx='43' cy='45' r='4.5' fill='%23fff' opacity='.9'/%3E%3Cpath d='M28 32h6m0 0 5-11m-5 11 5 11' stroke='%23fff' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"
+    />
+    <!--INLINE_CSS-->
+  </head>
+  <body>
+    <!-- ================= 解锁 / 初始化 ================= -->
+    <div id="lockScreen" class="lock" hidden>
+      <div class="lock-card">
+        <div class="lock-brand">
+          <span class="logo" aria-hidden="true">念</span>
+          <div>
+            <h1>一念</h1>
+            <p>离线优先的思维导图工作空间</p>
+          </div>
+        </div>
+        <form id="lockForm" class="lock-form" autocomplete="off" novalidate>
+          <label class="lock-label" id="lockLabel" for="lockPassword">密码</label>
+          <div class="field">
+            <input id="lockPassword" type="password" placeholder="请输入密码" spellcheck="false" autocomplete="current-password" />
+            <button type="button" class="ghost-icon" id="togglePass" aria-label="显示或隐藏密码"></button>
+          </div>
+          <div class="field" id="confirmField" hidden>
+            <input id="lockPassword2" type="password" placeholder="再次输入密码" autocomplete="new-password" />
+          </div>
+          <p class="lock-hint" id="lockHint"></p>
+          <button type="submit" class="btn btn-primary btn-block" id="lockSubmit">进入工作空间</button>
+          <button type="button" class="btn btn-ghost btn-block" id="btnImportAuth" hidden>
+            导入访问密钥文件
+          </button>
+          <button type="button" class="btn btn-ghost btn-block" id="btnResetLocal" hidden>
+            清空本机旧数据后重新开始
+          </button>
+        </form>
+        <p class="lock-foot" id="lockFoot">
+          数据以 AES-256 加密保存在本机浏览器，密码与内容都不会上传。
+        </p>
+      </div>
+      <div class="lock-deco" aria-hidden="true"></div>
+    </div>
+
+    <!-- ================= 主界面 ================= -->
+    <div id="shell" class="shell" hidden>
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-btn" id="btnSidebar" title="显示/隐藏侧栏" data-icon="panel"
+            ><span></span
+          ></button>
+          <button class="brand" id="brandBtn" title="回到根节点">
+            <span class="brand-mark">念</span>
+            <span class="brand-text">一念</span>
+          </button>
+          <div class="divider"></div>
+          <div class="map-title-wrap">
+            <input class="map-title" id="mapTitle" value="" aria-label="导图标题" spellcheck="false" />
+            <span class="save-state" id="saveState"></span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="search-box" id="searchBox">
+            <span class="search-icon" data-icon="search"></span>
+            <input id="searchInput" type="search" placeholder="搜索节点与内容  ⌘K" spellcheck="false" />
+            <button class="ghost-icon search-clear" id="searchClear" title="清除" data-icon="close"></button>
+            <div class="search-panel" id="searchPanel" hidden></div>
+          </div>
+          <button class="btn btn-ghost" id="btnRuleToggle" title="规则层 ⌘\\" data-icon="rule">规则</button>
+          <button class="icon-btn" id="btnInspectorToggle" title="详情层" data-icon="panel"></button>
+          <button class="icon-btn" id="btnUndo" title="撤销 ⌘Z" data-icon="undo"></button>
+          <button class="icon-btn" id="btnRedo" title="重做 ⇧⌘Z" data-icon="redo"></button>
+          <button class="btn btn-ghost" id="btnImport" data-icon="upload">导入</button>
+          <button class="btn btn-ghost" id="btnExport" data-icon="download">导出</button>
+          <button class="icon-btn" id="btnMore" title="更多" data-icon="more"></button>
+        </div>
+      </header>
+
+      <div class="workbench">
+        <aside class="sidebar" id="sidebar">
+          <div class="side-tabs" role="tablist">
+            <button class="side-tab is-active" data-tab="maps" role="tab">导图</button>
+            <button class="side-tab" data-tab="outline" role="tab">大纲</button>
+            <button class="side-tab" data-tab="recent" role="tab">动态</button>
+          </div>
+          <div class="side-body">
+            <div class="side-pane" data-pane="maps">
+              <div class="side-head">
+                <span id="mapCount">0 张导图</span>
+                <button class="icon-btn small" id="btnNewMap" title="新建导图" data-icon="plus"></button>
+              </div>
+              <div class="map-list" id="mapList"></div>
+            </div>
+            <div class="side-pane" data-pane="outline" hidden>
+              <div class="side-head">
+                <span>当前导图大纲</span>
+                <button class="icon-btn small" id="btnOutlineExpand" title="全部展开" data-icon="expand"></button>
+              </div>
+              <div class="outline" id="outlineList"></div>
+            </div>
+            <div class="side-pane" data-pane="recent" hidden>
+              <div class="side-head"><span>最近编辑</span></div>
+              <div class="recent-list" id="recentList"></div>
+            </div>
+          </div>
+          <div class="side-foot">
+            <div class="usage" id="usageInfo"></div>
+            <button class="btn btn-ghost btn-block" id="btnLock" data-icon="lock">锁定</button>
+          </div>
+        </aside>
+
+        <aside class="rulebar" id="rulebar" hidden aria-label="节点规则"></aside>
+
+        <main class="stage" id="stage" tabindex="0">
+          <div class="world" id="world">
+            <svg class="edges" id="edges" aria-hidden="true"><g id="edgeLayer"></g></svg>
+            <div class="nodes" id="nodes"></div>
+          </div>
+
+          <div class="stage-empty" id="stageEmpty" hidden>
+            <h2>从一个想法开始</h2>
+            <p>双击空白处新建节点，或按 <kbd>Tab</kbd> 为选中节点添加子节点。</p>
+            <button class="btn btn-primary" id="btnSeed">创建第一个节点</button>
+          </div>
+
+          <div class="hud" id="hud">
+            <button class="hud-btn" id="btnZoomOut" title="缩小" data-icon="minus"></button>
+            <span class="zoom-label" id="zoomLabel">100%</span>
+            <button class="hud-btn" id="btnZoomIn" title="放大" data-icon="plus"></button>
+            <div class="hud-sep"></div>
+            <button class="hud-btn" id="btnFit" title="适应窗口 ⌘0" data-icon="fit"></button>
+            <button class="hud-btn" id="btnCenter" title="定位到选中节点" data-icon="target"></button>
+            <div class="hud-sep"></div>
+            <button class="hud-btn" id="btnFocus" title="专注模式" data-icon="focus"></button>
+          </div>
+
+          <div class="stage-tip" id="stageTip">
+            双击节点编辑 · <kbd>Tab</kbd> 子节点 · <kbd>Enter</kbd> 同级节点 · 拖拽节点调整结构
+            <button class="link-btn" id="btnTipClose">知道了</button>
+          </div>
+        </main>
+
+        <aside class="inspector" id="inspector">
+          <div class="inspector-head">
+            <div class="inspector-title">
+              <span id="inspectorCrumb">未选择节点</span>
+            </div>
+            <button class="icon-btn small" id="btnInspectorClose" title="关闭面板" data-icon="close"></button>
+          </div>
+          <div class="inspector-body" id="inspectorBody">
+            <div class="empty-hint">
+              <span class="empty-emoji" data-icon="cursor"></span>
+              <p>选择一个节点查看与编辑内容</p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- ================= 浮层 ================= -->
+    <div class="lightbox" id="lightbox" hidden>
+      <button class="lightbox-close" id="lightboxClose" data-icon="close" aria-label="关闭"></button>
+      <div class="lightbox-body" id="lightboxBody"></div>
+      <div class="lightbox-caption" id="lightboxCaption"></div>
+    </div>
+
+    <div class="dragover" id="dragOverlay" hidden>
+      <div class="dragover-inner">松开以导入 JSON 文件</div>
+    </div>
+
+    <div class="modal-root" id="modalRoot"></div>
+    <div class="toasts" id="toasts"></div>
+
+    <!--INLINE_JS-->
+  </body>
+</html>

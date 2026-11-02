@@ -1,0 +1,11 @@
+# 构建产物与临时文件
+__pycache__/
+*.pyc
+.DS_Store
+
+# 含明文访问密钥的本地文件，绝不提交
+访问密钥-*.txt
+auth-password.txt
+
+# 项目记忆与本地工具缓存
+.workbuddy/
